@@ -28,7 +28,9 @@ router.get("/:pid", (req, res, next) => {
   const place = DUMMY_PLACES.find((p) => p.id === placeId);
 
   if (!place) {
-    res.status(404).json({ message: "No place found for provided Place ID" });
+    const error = new Error(`Invalid place id: ${placeId}`);
+    error.code = 404;
+    next(error);
   } else {
     //returns the place that matches the place id from the param url
     res.json({ place: place });
@@ -38,9 +40,14 @@ router.get("/:pid", (req, res, next) => {
 router.get("/user/:uid", (req, res, next) => {
   const userId = req.params.uid;
   const place = DUMMY_PLACES.find((p) => p.creator === userId);
-  
+
+  //rememeber: only ONE response can be sent at a time
+  //therefore make sure to use an if/else block
+  //or make sure to use 'return' if using if guard clause instead
   if (!place) {
-    res.status(404).json({ message: "No place found for provided User ID" });
+    const error = new Error(`Invalid user id: ${userId}`);
+    error.code = 404;
+    next(error);
   } else {
     //returns the place that matches the user id from the param url
     res.json({ place: place });
