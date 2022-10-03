@@ -1,5 +1,7 @@
 const express = require("express");
 
+const HttpError = require('../models/http-error');
+
 const router = express.Router();
 
 const DUMMY_PLACES = [
@@ -28,9 +30,7 @@ router.get("/:pid", (req, res, next) => {
   const place = DUMMY_PLACES.find((p) => p.id === placeId);
 
   if (!place) {
-    const error = new Error(`Invalid place id: ${placeId}`);
-    error.code = 404;
-    next(error);
+    throw new HttpError(`Invalid place id: ${placeId}`, 404);
   } else {
     //returns the place that matches the place id from the param url
     res.json({ place: place });
@@ -45,9 +45,7 @@ router.get("/user/:uid", (req, res, next) => {
   //therefore make sure to use an if/else block
   //or make sure to use 'return' if using if guard clause instead
   if (!place) {
-    const error = new Error(`Invalid user id: ${userId}`);
-    error.code = 404;
-    next(error);
+    next(new HttpError(`Invalid place id: ${userId}`, 404))
   } else {
     //returns the place that matches the user id from the param url
     res.json({ place: place });
