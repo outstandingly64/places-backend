@@ -32,6 +32,7 @@ const getPlaceById = (req, res, next) => {
       res.json({ place: place });
     }
   };
+
   const getPlaceByUserId = (req, res, next) => {
     const userId = req.params.uid;
     const place = DUMMY_PLACES.find((p) => p.creator === userId);
@@ -47,6 +48,24 @@ const getPlaceById = (req, res, next) => {
     }
   }
 
+  const createPlace = (req, res, next) => {
+    const { title, description, coordinates, address, creator} = req.body;
+
+    const createdPlace = {
+        title: title,
+        description: description,
+        location: coordinates,
+        address: address,
+        creator: creator
+    };
+
+    DUMMY_PLACES.push(createdPlace);
+
+    //status code 201 denotes successful CREATION of something
+    res.status(201).json({place: createdPlace});
+  };
+
   exports.getPlaceById = getPlaceById;
   exports.getPlaceByUserId = getPlaceByUserId;
+  exports.createPlace = createPlace;
 
