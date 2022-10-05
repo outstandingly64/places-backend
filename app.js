@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 
 
 const placesRoutes = require('./routes/places-routes');
+const userRoutes = require('./routes/user-routes');
 const HttpError = require('./models/http-error');
 
 // it is good practice NOT to do the routing
@@ -15,8 +16,11 @@ app.use(bodyParser.json());
 
 app.use('/api/places' ,placesRoutes); // =>/api/places/...
 
+app.use('/api/users', userRoutes);
+
+//error handling for unsupported routes
 app.use((req, res, next)=>{
-    const error = new HttpError('Could not find this place', 404);
+    const error = new HttpError('Could not find this route', 404);
     throw error;
 });
 
