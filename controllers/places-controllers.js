@@ -35,18 +35,18 @@ const getPlaceById = (req, res, next) => {
     }
   };
 
-  const getPlaceByUserId = (req, res, next) => {
+  const getPlacesByUserId = (req, res, next) => {
     const userId = req.params.uid;
-    const place = DUMMY_PLACES.find((p) => p.creator === userId);
+    const places = DUMMY_PLACES.filter((p) => p.creator === userId);
   
     //rememeber: only ONE response can be sent at a time
     //therefore make sure to use an if/else block
     //or make sure to use 'return' if using if guard clause instead
-    if (!place) {
-      next(new HttpError(`Invalid place id: ${userId}`, 404))
+    if (!places || places.length === 0) {
+      next(new HttpError(`Could not find any places for: ${userId}`, 404))
     } else {
       //returns the place that matches the user id from the param url
-      res.json({ place: place });
+      res.json({ places });
     }
   }
 
@@ -89,7 +89,7 @@ const getPlaceById = (req, res, next) => {
   };
 
   exports.getPlaceById = getPlaceById;
-  exports.getPlaceByUserId = getPlaceByUserId;
+  exports.getPlacesByUserId = getPlacesByUserId;
   exports.createPlace = createPlace;
   exports.updatePlace = updatePlace;
   exports.deletePlace = deletePlace;
