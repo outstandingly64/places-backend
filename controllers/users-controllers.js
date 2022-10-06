@@ -1,7 +1,9 @@
 const { v4: uuidv4 } = require('uuid');
+const { validationResult } = require('express-validator');
 
 const HttpError = require('../models/http-error');
 
+// fake data for testing purposes
 const DUMMY_USERS = [
     {
         id: 'u1',
@@ -11,11 +13,23 @@ const DUMMY_USERS = [
     }
 ];
 
+/**
+ * Returns existing users.
+ */
 const getUsers = (req, res, next) => {
     res.json({ users: DUMMY_USERS});
 };
 
+/**
+ * Throws an HttpError if an account with the entered
+ * credentials already exists.
+ */
 const signup = (req, res, next) => {
+    const errors = validationResult(req);
+    if(!errors.isEmpty()){
+      throw new HttpError('Invalid entries, please legitimize data.', 422);
+    }
+
     const { name, email, password } = req.body;
 
     const userAlreadyExists = DUMMY_USERS.find(u => u.email === email);
@@ -35,6 +49,10 @@ const signup = (req, res, next) => {
     res.status(201).json({user: createdUser});
 };
 
+/**
+ * throws an HttpError if credentials do not match any existing
+ * account credentials.
+ */
 const login = (req, res, next) => {
     const { email, password } = req.body;
 
