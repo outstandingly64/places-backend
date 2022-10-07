@@ -2,6 +2,7 @@ const { v4: uuidv4 } = require("uuid");
 const { validationResult } = require("express-validator");
 
 const HttpError = require("../models/http-error");
+const getCoordinates = require("../util/config");
 
 // We have no database at this point in development,
 // so we use dummy (fake) data, for now.
@@ -62,14 +63,21 @@ const getPlacesByUserId = (req, res, next) => {
 /**
  * Creates a new place.
  */
-const createPlace = (req, res, next) => {
+const createPlace = async (req, res, next) => {
   // validate incoming request for errors
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    throw new HttpError("Invalid entries, please legitimize data.", 422);
+    next(new HttpError("Invalid entries, please legitimize data.", 422));
   }
 
-  const { title, description, coordinates, address, creator } = req.body;
+  const { title, description, address, creator } = req.body;
+
+  let coordinates;
+  try {
+    coordinates = await getCoordinates(address);
+  } catch (error) {
+    return next(error);
+  }
 
   const createdPlace = {
     id: uuidv4(),
