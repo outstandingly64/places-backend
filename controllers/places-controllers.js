@@ -67,7 +67,7 @@ const createPlace = async (req, res, next) => {
   // validate incoming request for errors
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    next(new HttpError("Invalid entries, please legitimize data.", 422));
+   return next(new HttpError("Invalid entries, please legitimize data.", 422));
   }
 
   const { title, description, address, creator } = req.body;
