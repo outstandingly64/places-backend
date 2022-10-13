@@ -9,8 +9,6 @@ router.get("/:pid", placesControllers.getPlaceById);
 
 router.get("/user/:uid", placesControllers.getPlacesByUserId);
 
-//TODO: POST and PATCH routes need validation
-
 //you can pass more than one middleware on the same http path combo
 //they run in order from left to right
 router.post(
