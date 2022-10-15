@@ -6,7 +6,7 @@ const placesRoutes = require("./routes/places-routes");
 const userRoutes = require("./routes/user-routes");
 const HttpError = require("./models/http-error");
 
-const PLACES_DB_URL = require("./util/config");
+const PLACES_DB_URL = require("./util/databaseUrl");
 
 // it is good practice NOT to do the routing
 // in this main app.js file...

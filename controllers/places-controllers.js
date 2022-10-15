@@ -2,7 +2,8 @@ const { v4: uuidv4 } = require("uuid");
 const { validationResult } = require("express-validator");
 
 const HttpError = require("../models/http-error");
-const getCoordinates = require("../util/config");
+const getCoordsByAddress = require("../util/config");
+const Place = require('../models/place');
 
 // We have no database at this point in development,
 // so we use dummy (fake) data, for now.
@@ -74,21 +75,31 @@ const createPlace = async (req, res, next) => {
 
   let coordinates;
   try {
-    coordinates = await getCoordinates(address);
+    coordinates = await getCoordsByAddress(address);
   } catch (error) {
+    console.log(error);
     return next(error);
   }
 
-  const createdPlace = {
-    id: uuidv4(),
-    title: title,
-    description: description,
+  // TODO: current image url is hardcoded: we don't have image upload yet.
+  /**
+   * a new place, created using the Place schema & model.
+   */
+  const createdPlace = new Place({
+    title,
+    description,
+    address,
     location: coordinates,
-    address: address,
-    creator: creator,
-  };
+    image: 'https://www.strongdm.com/hubfs/Technology%20Images/603c5eb831820c3ce6a8f057_603a1586fa052d17fc2a6929_MongoDBAtlas.png',
+    creator
+  });
 
-  DUMMY_PLACES.push(createdPlace);
+  try {
+    await createdPlace.save();
+  } catch (err) {
+    const error = new HttpError('Creating place failed, please try again', 500);
+    return next(error);
+  }
 
   //status code 201 denotes successful CREATION of something
   res.status(201).json({ place: createdPlace });
