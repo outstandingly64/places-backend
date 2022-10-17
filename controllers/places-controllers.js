@@ -3,7 +3,7 @@ const { validationResult } = require("express-validator");
 
 const HttpError = require("../models/http-error");
 const getCoordsByAddress = require("../util/config");
-const Place = require('../models/place');
+const Place = require("../models/place");
 
 // We have no database at this point in development,
 // so we use dummy (fake) data, for now.
@@ -28,19 +28,28 @@ let DUMMY_PLACES = [
 /**
  * returns the place that matches the place id.
  */
-const getPlaceById = (req, res, next) => {
+const getPlaceById = async (req, res, next) => {
   // this represents the place id in the url
   const placeId = req.params.pid;
 
-  //finds the place that matches the place id in thew url
-  const place = DUMMY_PLACES.find((p) => p.id === placeId);
+  let place;
+  try {
+    //finds the place in the database that matches the place id in the url
+    //block scoping error: do not define place in try block.
+    place = await Place.findById(placeId);
+  } catch (err) {
+    const error = new HttpError('Something went wrong, my royal heiness.', 500);
+    return next(error);
+  }
 
   if (!place) {
-    throw new HttpError(`Invalid place id: ${placeId}`, 404);
-  } else {
-    //returns the place that matches the place id from the param url
-    res.json({ place: place });
+    const error = new HttpError(`Invalid place id: ${placeId}`, 404);
+    return next(error);
   }
+
+    //must turn mongoose object into normal js object, thus .toObject()
+    //eliminate underscore in ID for cleaner retrieval by setting getters option to true
+    res.json({ place: place.toObject({getters: true })});
 };
 
 /**
@@ -68,7 +77,7 @@ const createPlace = async (req, res, next) => {
   // validate incoming request for errors
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-   return next(new HttpError("Invalid entries, please legitimize data.", 422));
+    return next(new HttpError("Invalid entries, please legitimize data.", 422));
   }
 
   const { title, description, address, creator } = req.body;
@@ -90,14 +99,15 @@ const createPlace = async (req, res, next) => {
     description,
     address,
     location: coordinates,
-    image: 'https://www.strongdm.com/hubfs/Technology%20Images/603c5eb831820c3ce6a8f057_603a1586fa052d17fc2a6929_MongoDBAtlas.png',
-    creator
+    image:
+      "https://www.strongdm.com/hubfs/Technology%20Images/603c5eb831820c3ce6a8f057_603a1586fa052d17fc2a6929_MongoDBAtlas.png",
+    creator,
   });
 
   try {
     await createdPlace.save();
   } catch (err) {
-    const error = new HttpError('Creating place failed, please try again', 500);
+    const error = new HttpError("Creating place failed, please try again", 500);
     return next(error);
   }
 
