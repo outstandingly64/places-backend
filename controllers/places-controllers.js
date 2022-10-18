@@ -171,19 +171,27 @@ const updatePlace = async (req, res, next) => {
  * Checks if place exists before filtering it out
  * of our existing places array, thus, deleting the place in question
  */
-const deletePlace = (req, res, next) => {
+const deletePlace = async (req, res, next) => {
   // what place we talking about here? Hence, let's grab.
   // (thanks, URL path)
   const placeId = req.params.pid;
 
-  // check if place exists before deleting
-  if (!DUMMY_PLACES.find((p) => p.id === placeId)) {
-    throw new HttpError("Could not find a place that matches that id.", 404);
+  // GET the place from DB first
+  let place;
+  try{
+    place = await Place.findById(placeId);
+  }catch(err){
+    const error = new HttpError('An error has prevented the deletion of your place', 500);
+    return next(error);
   }
 
-  // places array replaced by (new) updated place array
-  // this essentially deletes the place in question
-  DUMMY_PLACES = DUMMY_PLACES.filter((p) => p.id !== placeId);
+  // now DELETE the place from DB
+  try{
+    await place.remove();
+  }catch(err){
+    const error = new HttpError('An error has prevented the deletion of your place', 500);
+    return next(error);
+  }
 
   res.status(200).json({ message: "Successfully relinquished." });
 };
