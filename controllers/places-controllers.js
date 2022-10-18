@@ -70,7 +70,7 @@ const getPlacesByUserId = async (req, res, next) => {
   //therefore make sure to use an if/else block
   //or make sure to use 'return' if using if guard clause instead
   if (!places || places.length === 0) {
-    next(new HttpError(`Could not find any places for: ${userId}`, 404));
+    return next(new HttpError(`Could not find any places for: ${userId}`, 404));
   } else {
 
     //the mongoose find() method returns places in an array
@@ -135,7 +135,7 @@ const updatePlace = async (req, res, next) => {
   // check & validate incoming inputs before updating the place
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    throw new HttpError("Invalid entries, please legitimize data.", 422);
+    return next(new HttpError("Invalid entries, please legitimize data.", 422)); 
   }
 
   // desrtucture/extract properties from incoming request body
