@@ -26,7 +26,7 @@ let DUMMY_PLACES = [
 ];
 
 /**
- * returns the place that matches the place id.
+ * returns the place that matches the place id in our DB.
  */
 const getPlaceById = async (req, res, next) => {
   // this represents the place id in the url
@@ -38,7 +38,7 @@ const getPlaceById = async (req, res, next) => {
     //block scoping error: do not define place in try block.
     place = await Place.findById(placeId);
   } catch (err) {
-    const error = new HttpError('Something went wrong, my royal heiness.', 500);
+    const error = new HttpError("Something went wrong, my royal heiness.", 500);
     return next(error);
   }
 
@@ -47,17 +47,24 @@ const getPlaceById = async (req, res, next) => {
     return next(error);
   }
 
-    //must turn mongoose object into normal js object, thus .toObject()
-    //eliminate underscore in ID for cleaner retrieval by setting getters option to true
-    res.json({ place: place.toObject({getters: true })});
+  //must turn mongoose object into normal js object, thus .toObject()
+  //eliminate underscore in ID for cleaner retrieval by setting getters option to true
+  res.json({ place: place.toObject({ getters: true }) });
 };
 
 /**
  * Returns all places that match respective userId.
  */
-const getPlacesByUserId = (req, res, next) => {
+const getPlacesByUserId = async (req, res, next) => {
   const userId = req.params.uid;
-  const places = DUMMY_PLACES.filter((p) => p.creator === userId);
+
+  let places;
+  try {
+    places = await Place.find({ creator: userId });
+  } catch (err) {
+    const error = new HttpError(`Something went wrong, please try again!`, 500);
+    return next(error);
+  }
 
   //rememeber: only ONE response can be sent at a time
   //therefore make sure to use an if/else block
@@ -65,13 +72,17 @@ const getPlacesByUserId = (req, res, next) => {
   if (!places || places.length === 0) {
     next(new HttpError(`Could not find any places for: ${userId}`, 404));
   } else {
-    //returns the place that matches the user id from the param url
-    res.json({ places });
+
+    //the mongoose find() method returns places in an array
+    //but each place needs its getters to still be set to true
+    res.json({
+      places: places.map((place) => place.toObject({ getters: true })),
+    });
   }
 };
 
 /**
- * Creates a new place.
+ * Async function, creates a new place.
  */
 const createPlace = async (req, res, next) => {
   // validate incoming request for errors
