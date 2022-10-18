@@ -131,7 +131,7 @@ const createPlace = async (req, res, next) => {
  * creates an (new) updated place object which replaces the
  * previous un-updated place object in question.
  */
-const updatePlace = (req, res, next) => {
+const updatePlace = async (req, res, next) => {
   // check & validate incoming inputs before updating the place
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -142,25 +142,29 @@ const updatePlace = (req, res, next) => {
   const { title, description } = req.body;
   const placeId = req.params.pid;
 
-  // we're not just updating the properties in question only:
-  // update is to return complete new place object that reflects
-  // that existing place object WITH the updated properties
-  const updatedPlace = { ...DUMMY_PLACES.find((p) => p.id === placeId) };
-
-  // index needed in order to replace place object in question
-  // correctly with the (new) updated place object later
-  const placeIndex = DUMMY_PLACES.findIndex((p) => p.id === placeId);
+  // GET the place in question if it exists
+  let place;
+  try{
+    place = await Place.findById(placeId);
+  }catch(err){
+    const error = new HttpError('An error has prevented your royal place from updating', 500);
+    return next(error);
+  }
 
   // designate the validated request body properties
   // as part of the (new) updated place object
-  updatedPlace.title = title;
-  updatedPlace.description = description;
+  place.title = title;
+  place.description = description;
 
-  // we now replace the existing place object with
-  // the (new) UPDATED place object
-  DUMMY_PLACES[placeIndex] = updatedPlace;
+  //store (save) the updated place's information
+  try{
+    await place.save();
+  }catch(err){
+    const error = new HttpError('An error has prevented your royal place from updating', 500);
+    return next(error);
+  }
 
-  res.status(200).json({ place: updatedPlace });
+  res.status(200).json({ place: place.toObject({getters: true}) });
 };
 
 /**
