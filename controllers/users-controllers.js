@@ -72,13 +72,21 @@ const signup = async (req, res, next) => {
  * throws an HttpError if credentials do not match any existing
  * account credentials.
  */
-const login = (req, res, next) => {
+const login = async (req, res, next) => {
     const { email, password } = req.body;
 
-    //Not the final authentication logic
-    const identifiedUser = DUMMY_USERS.find(u => u.email === email);
-    if(!identifiedUser || identifiedUser.password !== password){
-        return next( new HttpError('Could not identify user, please enter correct credentials', 401));
+    // check if the user exists
+    let existingUser;
+    try{
+        existingUser = await User.findOne({email: email});
+    }catch(err){
+        const error = new HttpError('An error has prevented a successful log-in, try again.', 500);
+        return next(error);
+    }
+
+    if(!existingUser || existingUser.password !== password){
+        const error = new HttpError('Invalid credentials, please try again.', 401);
+        return next(error);
     }
 
     res.json({message: 'Logged In!'});
