@@ -40,7 +40,7 @@ const signup = async (req, res, next) => {
       return next(new HttpError('Invalid entries, please legitimize data.', 422)); 
     }
 
-    const { name, email, password, places } = req.body;
+    const { name, email, password } = req.body;
 
     // check if the user already exists
     let existingUser;
@@ -64,7 +64,7 @@ const signup = async (req, res, next) => {
         email,
         image: 'https://cdn1.iconfinder.com/data/icons/good-life-7/60/prince__crown__avatar__king__goldlife-512.png',
         password,
-        places
+        places: []
     });
 
     try {
