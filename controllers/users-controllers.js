@@ -1,18 +1,8 @@
-const { v4: uuidv4 } = require('uuid');
 const { validationResult } = require('express-validator');
 
 const HttpError = require('../models/http-error');
 const User = require('../models/user');
 
-// fake data for testing purposes
-const DUMMY_USERS = [
-    {
-        id: 'u1',
-        name: 'Ivan Tello',
-        email: 'king@gmail.com',
-        password: 'devTestMode'
-    }
-];
 
 /**
  * Returns all existing users.

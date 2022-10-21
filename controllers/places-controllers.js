@@ -7,26 +7,6 @@ const getCoordsByAddress = require("../util/config");
 const Place = require("../models/place");
 const User = require('../models/user');
 
-// We have no database at this point in development,
-// so we use dummy (fake) data, for now.
-let DUMMY_PLACES = [
-  {
-    id: "p1",
-    title: "Tenochtitlan",
-    description:
-      "The city was built on an island in what was then Lake Texcoco in the Valley of Mexico. The city was the capital of the expanding Aztec Empire in the 15th century until it was captured by the Spanish in 1521. At its peak, it was the largest city in the pre-Columbian Americas.",
-    imageUrl:
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/El_templo_mayor_en_Tenochtitlan.png/800px-El_templo_mayor_en_Tenochtitlan.png",
-    address:
-      "Historic center of Mexico City, Centro, Mexico City, CDMX, Mexico",
-    location: {
-      lat: 19.4337383,
-      lng: -99.1454316,
-    },
-    creator: "u1",
-  },
-];
-
 /**
  * returns the place that matches the place id in our DB.
  */
@@ -60,9 +40,9 @@ const getPlaceById = async (req, res, next) => {
 const getPlacesByUserId = async (req, res, next) => {
   const userId = req.params.uid;
 
-  let places;
+  let userPlaces;
   try {
-    places = await Place.find({ creator: userId });
+    userPlaces = await User.findById(userId).populate('places');
   } catch (err) {
     const error = new HttpError(`Something went wrong, please try again!`, 500);
     return next(error);
@@ -71,14 +51,14 @@ const getPlacesByUserId = async (req, res, next) => {
   //rememeber: only ONE response can be sent at a time
   //therefore make sure to use an if/else block
   //or make sure to use 'return' if using if guard clause instead
-  if (!places || places.length === 0) {
+  if (!userPlaces || userPlaces.places.length === 0) {
     return next(new HttpError(`Could not find any places for: ${userId}`, 404));
   } else {
 
     //the mongoose find() method returns places in an array
     //but each place needs its getters to still be set to true
     res.json({
-      places: places.map((place) => place.toObject({ getters: true })),
+      places: userPlaces.places.map((place) => place.toObject({ getters: true })),
     });
   }
 };
