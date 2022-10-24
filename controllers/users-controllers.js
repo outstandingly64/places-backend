@@ -70,6 +70,8 @@ const signup = async (req, res, next) => {
 /**
  * throws an HttpError if credentials do not match any existing
  * account credentials.
+ * BUG: upon user creation, credentials are converted into lowwercase characters,
+ * so when logging in, uppercase character you signed up with will not be recognized
  */
 const login = async (req, res, next) => {
     const { email, password } = req.body;
@@ -84,7 +86,7 @@ const login = async (req, res, next) => {
     }
 
     if(!existingUser || existingUser.password !== password){
-        const error = new HttpError('Invalid credentials, please try again.', 401);
+        const error = new HttpError('Invalid credentials, please try again, my friend.', 401);
         return next(error);
     }
 
