@@ -52,7 +52,7 @@ const getPlacesByUserId = async (req, res, next) => {
   //therefore make sure to use an if/else block
   //or make sure to use 'return' if using if guard clause instead
   if (!userPlaces || userPlaces.places.length === 0) {
-    return next(new HttpError(`Could not find any places for: ${userId}`, 404));
+    return next(new HttpError(`Could not find any places for this user...`, 404));
   } else {
 
     //the mongoose find() method returns places in an array
