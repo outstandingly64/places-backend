@@ -1,4 +1,6 @@
 const fs = require('fs');
+const path = require('path');
+
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
@@ -18,6 +20,8 @@ const { fields } = require('./middleware/file-upload');
 const app = express();
 
 app.use(bodyParser.json());
+
+app.use('/uploads/images', express.static(path.join('uploads', 'images')));
 
 app.use((req, res, next)=>{
   res.header("Access-Control-Allow-Origin", "*");
