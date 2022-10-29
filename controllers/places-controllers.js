@@ -1,3 +1,5 @@
+const fs = require('fs');
+
 const { v4: uuidv4 } = require("uuid");
 const { validationResult } = require("express-validator");
 const mongoose = require("mongoose");
@@ -204,6 +206,8 @@ const deletePlace = async (req, res, next) => {
     return next(error);
   }
 
+  const imagePath = place.image;
+
   // now DELETE the place from DB
   try{
     const sess = await mongoose.startSession();
@@ -217,6 +221,11 @@ const deletePlace = async (req, res, next) => {
     const error = new HttpError('An error has prevented the deletion of your place', 500);
     return next(error);
   }
+
+  //deleting image also
+  fs.unlink(imagePath, err =>{
+    console.log(err);
+  });
 
   res.status(200).json({ message: "Successfully relinquished." });
 };
