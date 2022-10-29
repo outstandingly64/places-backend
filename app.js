@@ -1,3 +1,4 @@
+const fs = require('fs');
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
@@ -7,6 +8,8 @@ const userRoutes = require("./routes/user-routes");
 const HttpError = require("./models/http-error");
 
 const PLACES_DB_URL = require("./util/databaseUrl");
+const { ifError } = require('assert');
+const { fields } = require('./middleware/file-upload');
 
 // it is good practice NOT to do the routing
 // in this main app.js file...
@@ -35,6 +38,11 @@ app.use((req, res, next) => {
 });
 
 app.use((error, req, res, next) => {
+  if(req.file){
+    fs.unlink(req.file.path, (err) => {
+      console.log(err);
+    });
+  }
   if (res.headerSent) {
     return next(error);
   }

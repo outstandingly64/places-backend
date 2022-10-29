@@ -1,3 +1,4 @@
+const { request } = require("express");
 const { validationResult } = require("express-validator");
 
 const HttpError = require("../models/http-error");
@@ -60,8 +61,7 @@ const signup = async (req, res, next) => {
   const createdUser = new User({
     name,
     email,
-    image:
-      "https://cdn1.iconfinder.com/data/icons/good-life-7/60/prince__crown__avatar__king__goldlife-512.png",
+    image: req.file.path,
     password,
     places: [],
   });
