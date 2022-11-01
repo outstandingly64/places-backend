@@ -58,13 +58,12 @@ const signup = async (req, res, next) => {
 
   let hashedPassword;
   //hash() returns a promise
-  try{
-    hashedPassword = await bcrypt.hash(password, 12)
-  }catch(err){
-    const error = new HttpError('Could not create user, please try again', 500);
+  try {
+    hashedPassword = await bcrypt.hash(password, 12);
+  } catch (err) {
+    const error = new HttpError("Could not create user, please try again", 500);
     return next(error);
   }
-  
 
   const createdUser = new User({
     name,
@@ -105,13 +104,36 @@ const login = async (req, res, next) => {
     return next(error);
   }
 
-  if (!existingUser || existingUser.password !== password) {
+  if (!existingUser) {
     const error = new HttpError(
       "Invalid credentials, please try again, my friend.",
       401
     );
     return next(error);
   }
+
+  // making sure there is no server side error during pw-validation operation
+  let isValidPassword = false;
+  try {
+    isValidPassword = await bcrypt.compare(password, existingUser.password);
+  } catch (err) {
+    const error = new HttpError(
+      "Login unsuccessful, please check your credentials and try again!",
+      500
+    );
+    return next(error);
+  }
+
+  // comparing the attempted login password with the existing hashed password
+  if (!isValidPassword) {
+    const error = new HttpError(
+      "Invalid credentials, please try again, my friend.",
+      401
+    );
+    return next(error);
+  }
+
+  // TODO: generate token after valid email & password check
 
   res.json({
     message: "Logged In!",
