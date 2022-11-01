@@ -3,6 +3,7 @@ const { check } = require("express-validator");
 
 const placesControllers = require("../controllers/places-controllers");
 const fileUpload = require('../middleware/file-upload');
+const checkAuth = require('../middleware/check-auth');
 
 const router = express.Router();
 
@@ -10,7 +11,9 @@ router.get("/:pid", placesControllers.getPlaceById);
 
 router.get("/user/:uid", placesControllers.getPlacesByUserId);
 
-//you can pass more than one middleware on the same http path combo
+router.use(checkAuth);
+
+//you can pass more than one middleware on the same http  path combo
 //they run in order from left to right
 router.post(
   "/",
