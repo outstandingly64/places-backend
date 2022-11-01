@@ -1,6 +1,7 @@
 const { request } = require("express");
 const { validationResult } = require("express-validator");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 const HttpError = require("../models/http-error");
 const User = require("../models/user");
@@ -80,7 +81,21 @@ const signup = async (req, res, next) => {
     return next(error);
   }
 
-  res.status(201).json({ user: createdUser.toObject({ getters: true }) });
+  let token;
+  try {
+    token = jwt.sign(
+      { userId: createdUser.id, email: createdUser.email },
+      "topsecretdocs",
+      { expiresIn: "1hr" }
+    );
+  } catch (err) {
+    const error = new HttpError("Sign-up failed, please try again", 500);
+    return next(error);
+  }
+
+  res
+    .status(201)
+    .json({ userId: createdUser.id, email: createdUser.email, token: token });
 };
 
 /**
@@ -133,11 +148,22 @@ const login = async (req, res, next) => {
     return next(error);
   }
 
-  // TODO: generate token after valid email & password check
+  let token;
+  try {
+    token = jwt.sign(
+      { userId: existingUser.id, email: existingUser.email },
+      "topsecretdocs",
+      { expiresIn: "1hr" }
+    );
+  } catch (err) {
+    const error = new HttpError("login failed, please try again", 500);
+    return next(error);
+  }
 
   res.json({
-    message: "Logged In!",
-    user: existingUser.toObject({ getters: true }),
+    userId: existingUser.id,
+    email: existingUser.email,
+    token: token
   });
 };
 
