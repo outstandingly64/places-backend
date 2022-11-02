@@ -169,7 +169,7 @@ const updatePlace = async (req, res, next) => {
 
   //check if request comes from authorized user
   if(place.creator.toString() !== req.userData.userId){
-    const error = new HttpError("You are not allowed to invade another ruler's place!", 401);
+    const error = new HttpError("You are not allowed to invade (edit) another ruler's place!", 401);
     return next(error);
   }
 
@@ -209,6 +209,11 @@ const deletePlace = async (req, res, next) => {
 
   if(!place){
     const error = new HttpError('Could not find place for the given ID.', 404);
+    return next(error);
+  }
+
+  if(place.creator.id !== req.userData.userId){
+    const error = new HttpError("You are not allowed to conquer (delete) another ruler's place!", 401);
     return next(error);
   }
 

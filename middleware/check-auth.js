@@ -19,7 +19,7 @@ module.exports = (req, res, next) => {
     next();
 
   } catch (err) {
-    const error = new HttpError("Authentication unsuccessful!", 401);
+    const error = new HttpError("Authentication unsuccessful!", 403);
       return next(error);
   }
 };
