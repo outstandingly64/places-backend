@@ -167,6 +167,12 @@ const updatePlace = async (req, res, next) => {
     return next(error);
   }
 
+  //check if request comes from authorized user
+  if(place.creator.toString() !== req.userData.userId){
+    const error = new HttpError("You are not allowed to invade another ruler's place!", 401);
+    return next(error);
+  }
+
   // designate the validated request body properties
   // as part of the (new) updated place object
   place.title = title;
