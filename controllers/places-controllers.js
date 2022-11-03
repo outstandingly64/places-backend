@@ -75,7 +75,7 @@ const createPlace = async (req, res, next) => {
     return next(new HttpError("Invalid entries, please legitimize data.", 422));
   }
 
-  const { title, description, address, creator } = req.body;
+  const { title, description, address } = req.body;
 
   let coordinates;
   try {
@@ -85,7 +85,6 @@ const createPlace = async (req, res, next) => {
     return next(error);
   }
 
-  // TODO: current image url is hardcoded: we don't have image upload yet.
   /**
    * a new place, created using the Place schema & model.
    */
@@ -95,7 +94,7 @@ const createPlace = async (req, res, next) => {
     address,
     location: coordinates,
     image: req.file.path,
-    creator,
+    creator: req.userData.userId,
   });
 
   // check if the userId of the logged-in user already exists
