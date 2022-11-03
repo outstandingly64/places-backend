@@ -100,7 +100,7 @@ const createPlace = async (req, res, next) => {
   // check if the userId of the logged-in user already exists
   let user;
   try {
-    user = await User.findById(creator);
+    user = await User.findById(req.userData.userId);
   }catch(err){
     const error = new HttpError('Could not find user for provided ID. Try again please!', 500);
     return next(error);
