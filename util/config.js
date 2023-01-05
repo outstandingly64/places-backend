@@ -2,20 +2,20 @@ const axios = require("axios");
 
 const HttpError = require("../models/http-error");
 
-//TODO: Replace old Google API with Mapbox API for reverse geocoding 
-const API_KEY = process.env.GOOGLE_API_KEY;
+// LOCATION IQ API Token
+const API_KEY = process.env.LOCATION_IQ_API_TOKEN;
 
 /**
  * address (string)
  */
 const getCoordsByAddress = async (address) => {
-  const response = await axios.get(`
-    https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
+  const response = await axios.get(
+    `https://us1.locationiq.com/v1/search.php?key=${API_KEY}&q=${encodeURIComponent(
       address
-    )}&key=${API_KEY}
-    `);
+    )}&format=json`
+  );
 
-  const data = response.data;
+  const data = response.data[0];
 
   if (!data || data.status === "ZERO_RESULTS") {
     const error = new HttpError(
@@ -25,10 +25,13 @@ const getCoordsByAddress = async (address) => {
     throw error;
   }
 
-  const coordinates = data.results[0].geometry.location;
+  const { lat, lon } = data;
+  const coordinates = {
+    lat,
+    lng: lon,
+  };
 
   return coordinates;
 };
 
-//module.exports = PLACES_DB_URL;
 module.exports = getCoordsByAddress;
