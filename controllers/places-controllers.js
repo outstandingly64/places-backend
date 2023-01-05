@@ -77,6 +77,7 @@ const createPlace = async (req, res, next) => {
 
   const { title, description, address } = req.body;
 
+  // geocoding api generates coordinates for place's address 
   let coordinates;
   try {
     coordinates = await getCoordsByAddress(address);

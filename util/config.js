@@ -2,6 +2,7 @@ const axios = require("axios");
 
 const HttpError = require("../models/http-error");
 
+//TODO: Replace old Google API with Mapbox API for reverse geocoding 
 const API_KEY = process.env.GOOGLE_API_KEY;
 
 /**
