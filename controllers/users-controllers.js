@@ -2,18 +2,23 @@ const { request } = require("express");
 const { validationResult } = require("express-validator");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-
-const HttpError = require("../models/http-error");
 const User = require("../models/user");
+const HttpError = require("../models/http-error");
+const sharp = require("sharp");
+const {
+  uploadFile,
+  getObjectSignedUrl,
+  randomImageName,
+} = require("../util/aws-s3");
 
 /**
  * Returns all existing users.
  */
 const getUsers = async (req, res, next) => {
-  let users;
+  let dbUsers;
 
   try {
-    users = await User.find({}, "-password");
+    dbUsers = await User.find({}, "-password");
   } catch (err) {
     const error = new HttpError(
       "Error occurred while fetching royal users.",
@@ -22,7 +27,24 @@ const getUsers = async (req, res, next) => {
     return next(error);
   }
 
-  res.json({ users: users.map((user) => user.toObject({ getters: true })) });
+  let users = dbUsers.map((user) => user.toObject({ getters: true }));
+
+  if (users.length > 0) {
+    try {
+      for (let user of users) {
+        const imageUrl = await getObjectSignedUrl(user.image);
+        user.image = imageUrl;
+      }
+    } catch (err) {
+      const error = new HttpError(
+        "Error occurred while fetching royal users' data.",
+        500
+      );
+      return next(error);
+    }
+  }
+
+  res.json({ users });
 };
 
 /**
@@ -66,10 +88,35 @@ const signup = async (req, res, next) => {
     return next(error);
   }
 
+  //resize image
+  let buffer;
+  try {
+    buffer = await sharp(req.file.buffer).toBuffer();
+  } catch (err) {
+    const error = new HttpError(
+      "Image processing error has occurred, please try again",
+      500
+    );
+    return next(error);
+  }
+
+  const imgName = randomImageName();
+
+  //uploads image to the S3 bucket
+  try {
+    await uploadFile(buffer, imgName, req.file.mimetype);
+  } catch (err) {
+    const error = new HttpError(
+      "Image failed to upload, please try again",
+      500
+    );
+    return next(error);
+  }
+
   const createdUser = new User({
     name,
     email,
-    image: req.file.path,
+    image: imgName,
     password: hashedPassword,
     places: [],
   });
@@ -163,7 +210,7 @@ const login = async (req, res, next) => {
   res.json({
     userId: existingUser.id,
     email: existingUser.email,
-    token: token
+    token: token,
   });
 };
 
