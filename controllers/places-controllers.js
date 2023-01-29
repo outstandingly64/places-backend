@@ -111,9 +111,7 @@ const createPlace = async (req, res, next) => {
   //resize image
   let buffer;
   try {
-    buffer = await sharp(req.file.buffer)
-      .resize({ height: 1080, width: 1920, fit: "contain" })
-      .toBuffer();
+    buffer = await sharp(req.file.buffer).toBuffer();
   } catch (err) {
     const error = new HttpError(
       "Image processing error has occurred, please try again",
